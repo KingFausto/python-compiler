@@ -1,33 +1,39 @@
+import re
 
-# TIPOS DE DATOS
-TOKEN_INT = "INT"
-TOKEN_FLOAT = "FLOAT"
-TOKEN_STRING = "STRING"
-TOKEN_BOOL = "BOOL"
+KEYWORDS = {
+    "+": "SUM",
+    "-": "SUB",
+    "/": "DIV",
+    "(": "OPENSEP1",
+    ")": "CLOSESEP1",
+    "[": "OPENSEP2",
+    "]": "CLOSESEP2",
+    "{": "OPENSEP3",
+    "}": "CLOSESEP3",
+    ":V": "MENOR",
+    "V:": "MAYOR",
+    "=V": "MENIG",
+    "V=": "MAYIG",
+    "=_=": "IGUAL",
+    "=n=": "NIGUAL",
+    "&_&": "AND",
+    "¬_¬": "OR",
+    "T_T": "NOT",
+    "@_@": "WHILE",
+    "#_#": "FOR",
+    "o_O?": "IF",
+    "O_O?": "ELIF",
+    "$_$": "RETURN",
+    ">:O": "PRINT",
+    ":O": "COMMENT",
+    ">.>": "IN",
+    ":S": "BREAK",
+    "♥_♥": "FUN",
+    ";": "SEP4",
+    ",": "SEP5"
+}
 
-# OPERADORES ARITMETICOS
-TOKEN_SUM = "SUM"
-TOKEN_RES = "RES"
-TOKEN_MULT = "MULT"
-TOKEN_DIV = "DIV"
-
-# NUMEROS
-NUMS = "0123456789"
-
-# OPERADORES DE COMPARACION
-TOKEN_MENOR =  "TOKEN_MENOR"  # :V
-TOKEN_MAYOR =  "TOKEN_MAYOR"  # V:
-TOKEN_MENIG =  "TOKEN_MENIG"  # =V
-TOKEN_MAYIG =  "TOKEN_MAYIG"  # V=
-TOKEN_IGUAL =  "TOKEN_IGUAL"  # =_=
-TOKEN_NIGUAL = "TOKEN_NIGUAL" # =n=
-
-# OPERADORES LOGICOS
-TOKEN_AND = "TOKEN_AND"       # &_&
-TOKEN_OR  = "TOKEN_OR"        # ¬_¬
-TOKEN_NOT = "TOKEN_NOT"       # T_T
-
-
+separadores = "[](){};,"
 class Token:
     def __init__(self, tipo, valor=None):
         self.tipo = tipo
@@ -36,128 +42,50 @@ class Token:
     def __repr__(self):
         return f"({self.tipo}, {self.valor})"
 
+def putSpace(codigo):
+    for i in separadores:
+        codigo = re.sub(rf"\{i}", rf" {i} ", codigo)
+    return codigo
 
-class AnalizadorLexico:
-    def __init__(self, txt):
-        self.txt = txt
-        self.pos = -1
-        self.actual = None
-
-
-    def siguiente(self):
-        self.pos += 1
-        if self.pos < len(self.txt):
-            self.actual = self.txt[self.pos]
+def fixString(codigo):
+    codigo = putSpace(codigo)
+    codigo = codigo.split()
+    new_code = []
+    value = ""  
+    isString = False
+    for i in codigo:
+        if i[0] == '"' and i[-1] == '"' and isString == False and len(i) > 1:
+            new_code.append(i)
+        elif i[0] == '"' and isString == False:
+           isString = True
+           value += i
+        elif isString == True and i[-1] == '"':
+            value += " " + i
+            isString = False      
+            new_code.append(value)
+            value = ""
+        elif isString == True:
+            value += " " + i
         else:
-            self.actual = None
+            new_code.append(i)
+    return new_code
 
-
-    def crear_numero(self):
-        numero = ""
-        punto = False
-
-        while self.actual is not None and self.actual in NUMS or self.actual == '.':
-            if self.actual == '.':
-                if punto:
-                    # ERROR: invalid syntax
-                    break
-                else:
-                    punto = True
-                    numero += '.'
-            else:
-                numero += self.actual
-            self.siguiente()
-
-        if punto:
-            return Token(TOKEN_FLOAT, float(numero))
+def tokenizar(codigo):
+    new_code = fixString(codigo)
+    tokens = []
+    for i in new_code:
+        if i in KEYWORDS:
+            tokens.append(Token(KEYWORDS[i], i))
+        elif re.search(r'^\d+$', i):
+            tokens.append(Token('INT', i))
+        elif re.search(r'^\d+\.\d+$', i):
+            tokens.append(Token('FLOAT', i))
+        elif i[0] == '"':
+            tokens.append(Token('STRING', i))
         else:
-            return Token(TOKEN_INT, int(numero))
+            tokens.append(Token('VAR', i))
+    return tokens
 
-
-    def crear_string(self, quotes="\""):
-        string_ = ""
-        self.siguiente()
-
-        while self.actual is not None:
-            if self.actual == quotes:
-                break
-            else:
-                string_ += self.actual
-            self.siguiente()
-        
-        return Token(TOKEN_STRING, string_)
-
-
-    def crear_oplogico(self):
-        operador = ""
-        und = False
-        
-        while self.actual is not None and self.actual in "&¬T_":
-            if self.actual == "_":
-                if not und:
-                    operador += self.actual
-                    und = True
-                else:
-                    break
-            elif self.actual in "&¬T":
-                if not operador or operador[0] == self.actual:
-                    operador += self.actual
-                else:
-                    break
-            self.siguiente()
-            print(operador)
-
-        if operador == "&_&":
-            return Token(TOKEN_AND, operador)
-        elif operador == "¬_¬":
-            return Token(TOKEN_OR, operador)
-        elif operador == "T_T":
-            return Token(TOKEN_NOT, operador)
-
-
-    def crear_while(self):
-        # while_ = ""
-        pass
-
-
-
-    def tokenizar(self):
-        tokens = []
-
-        self.siguiente()
-
-        while self.actual != None:
-            if self.actual == " " or self.actual == "\t":
-                self.siguiente()
-            elif self.actual == "+":
-                tokens.append(Token(TOKEN_SUM, self.actual))
-                self.siguiente()
-            elif self.actual == "-":
-                tokens.append(Token(TOKEN_RES, self.actual))
-                self.siguiente()
-            elif self.actual == "*":
-                tokens.append(Token(TOKEN_MULT, self.actual))
-                self.siguiente()
-            elif self.actual == "/":
-                tokens.append(Token(TOKEN_DIV, self.actual))
-                self.siguiente()
-            elif self.actual in NUMS:
-                tokens.append(self.crear_numero())
-                self.siguiente()
-            elif self.actual == "\"":
-                tokens.append(self.crear_string(quotes="\""))
-                self.siguiente()
-            elif self.actual == "\'":
-                tokens.append(self.crear_string(quotes="\'"))
-                self.siguiente()
-            elif self.actual in "&¬T":    # and self.txt[self.pos+1] == "_"
-                tokens.append(self.crear_oplogico())
-                self.siguiente()
-            elif self.actual == "@":
-                tokens.append(self.crear_while())
-                self.siguiente()
-
-        return tokens
-
-
-
+with open("test-2-1.txt", "r") as f:
+    for i in f.readlines():
+        print(tokenizar(i))
