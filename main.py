@@ -1,7 +1,9 @@
-from token import AnalizadorLexico
-x=5
+from compilador import Compilador
 
 if __name__ == "__main__":
-    analizador = AnalizadorLexico(r"5 ¬_¬ 5")
-    tokens = analizador.tokenizar()
-    print(tokens)
+    compilador = Compilador()
+
+    with open("test.txt", "r") as f:
+        for i in f.readlines():
+            print(i)
+            print(compilador.crear_tokens(i))
