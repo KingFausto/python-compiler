@@ -1,5 +1,6 @@
 import re
-from token import Token
+from token_ import Token
+
 
 class AnalizadorLexico:
     def __init__(self):

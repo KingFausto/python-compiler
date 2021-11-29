@@ -1,7 +1,10 @@
+from __future__ import annotations
 import re
+from token_ import Token
 from analizador_lexico import AnalizadorLexico
 from analizador_sintactico import AnalizadorSintactico
 from analizador_semantico import AnalizadorSemantico
+from anytree import Node
 
 
 class Compilador:
@@ -46,7 +49,13 @@ class Compilador:
         codigo: list = self._arreglar_strings(codigo)
         return codigo
 
-    def crear_tokens(self, codigo: str) -> list:
-        codigo: list = self._preprocesar_codigo(codigo)
-        tokens: list = self.analizador_lexico.crear_tokens(codigo)
-        return tokens
+    def compilar_codigo(self, archivo: str) -> list:
+        token_list = []
+        with open(archivo, "r") as f:
+            for i in f.readlines():
+                codigo: list = self._preprocesar_codigo(i)
+                tokens: list = self.analizador_lexico.crear_tokens(codigo)
+                arbol: Node = self.analizador_sintactico.crear_arbol(tokens)
+                token_list += tokens
+
+        return token_list

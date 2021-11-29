@@ -1,9 +1,10 @@
 from re import X
-from token import Token
+from token_ import Token
 from abc import ABC, abstractmethod
 
+
 class Expresion(ABC):
-    pass 
+    pass
 
 
 class ExpresionAsignacion(Expresion):
@@ -14,7 +15,8 @@ class ExpresionAsignacion(Expresion):
     def __repr__(self):
         return f"{self.identificador} = {self.expresion}"
 
-class ExpresionCondicional(Expresion):
+
+class ExpresionIF(Expresion):
     def __init__(self, condicion: Expresion, cuerpo: Expresion, else_: Expresion):
         self.condicion = condicion
         self.cuerpo = cuerpo
@@ -26,14 +28,15 @@ class ExpresionCondicional(Expresion):
 
 class ExpresionInfijo(Expresion):
     def __init__(self, primera_expresion: Expresion, operador: Token, segunda_expresion: Expresion):
-       self.primera_expresion = primera_expresion
-       self.operador = operador
-       self.segunda_expresion = segunda_expresion
+        self.primera_expresion = primera_expresion
+        self.operador = operador
+        self.segunda_expresion = segunda_expresion
 
     def __repr__(self):
         return f"{self.operador}({self.operador},{self.segunda_expresion})"
         # SUM(3, 5)
         # EXPRARITMETICA(3, SUM, 5)
+
 
 class ExpresionPrefijo(Expresion):
     def __init__(self, operador: Token, expresion: Expresion):
@@ -44,10 +47,33 @@ class ExpresionPrefijo(Expresion):
         return f"{self.operador} {self.expresion}"
 
 
+class Numero(Expresion):
+    def __init__(self, numero: Token):
+        self.numero = numero
+
+    def __repr__(self):
+        return str(self.numero)
+
+
+class Cadena(Expresion):
+    def __init__(self, cadena: Token):
+        self.cadena = cadena
+
+    def __repr__(self):
+        return self.cadena
+
+
+class Booleano(Expresion):
+    def __init__(self, booleano: Token):
+        self.booleano = booleano
+
+    def __repr__(self):
+        return str(self.booleano)
+
+
 """expr -> IF | WHILE | FOR | RETURN 
 IF -> if expr: expr | if expr: expr else expr | if expr: expr elif expr 
 WHILE -> while expr: expr
-"""
 
 if_ = Node("IF")
 if x < 5:
@@ -60,3 +86,4 @@ EXPRESIONCONDICIONAL
 |    | - (NUMERO, 5)
 | - CUERPO
 |   | - 
+"""
