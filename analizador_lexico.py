@@ -8,6 +8,7 @@ class AnalizadorLexico:
             # operadores aritmeticos
             "+": "SUM",
             "-": "SUB",
+            "*": "MULT",
             "/": "DIV",
             "=": "ASIGN",
             # separadores
@@ -36,7 +37,7 @@ class AnalizadorLexico:
             "o_O?": "IF",
             "O_O?": "ELIF",
             "O_o?": "ELSE",
-            # auxiliares 
+            # auxiliares
             "$_$": "RETURN",
             ">:O": "PRINT",
             ":O": "COMMENT",
@@ -50,12 +51,12 @@ class AnalizadorLexico:
         for i in codigo:
             if i in self.keywords:
                 tokens.append(Token(self.keywords[i], i))
-            elif re.search(r'^\d+$', i):
-                tokens.append(Token('INT', i))
-            elif re.search(r'^\d+\.\d+$', i):
-                tokens.append(Token('FLOAT', i))
+            elif re.search(r"^\d+$", i):
+                tokens.append(Token("INT", i))
+            elif re.search(r"^\d+\.\d+$", i):
+                tokens.append(Token("FLOAT", i))
             elif i[0] == '"':
-                tokens.append(Token('STRING', i))
+                tokens.append(Token("STRING", i))
             else:
-                tokens.append(Token('VAR', i))
+                tokens.append(Token("VAR", i))
         return tokens

@@ -23,19 +23,24 @@ class ExpresionIF(Expresion):
         self.else_ = else_
 
     def __repr__(self):
-        return f"{self.condicion} {self.cuerpo} {self.else_}"
+        return f"if({self.condicion},{self.cuerpo},{self.else_})"
 
 
 class ExpresionInfijo(Expresion):
-    def __init__(self, primera_expresion: Expresion, operador: Token, segunda_expresion: Expresion):
+    def __init__(
+        self,
+        primera_expresion: Expresion,
+        operador: Token,
+        segunda_expresion: Expresion,
+    ):
         self.primera_expresion = primera_expresion
         self.operador = operador
         self.segunda_expresion = segunda_expresion
 
     def __repr__(self):
-        return f"{self.operador}({self.operador},{self.segunda_expresion})"
-        # SUM(3, 5)
-        # EXPRARITMETICA(3, SUM, 5)
+        return (
+            f"{self.operador.valor}({self.primera_expresion},{self.segunda_expresion})"
+        )
 
 
 class ExpresionPrefijo(Expresion):
@@ -44,7 +49,7 @@ class ExpresionPrefijo(Expresion):
         self.expresion = expresion
 
     def __repr__(self):
-        return f"{self.operador} {self.expresion}"
+        return f"{self.operador.valor}({self.expresion})"
 
 
 class Numero(Expresion):
@@ -52,7 +57,7 @@ class Numero(Expresion):
         self.numero = numero
 
     def __repr__(self):
-        return str(self.numero)
+        return str(self.numero.valor)
 
 
 class Cadena(Expresion):

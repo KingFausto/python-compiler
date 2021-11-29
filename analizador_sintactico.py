@@ -15,64 +15,90 @@ class AnalizadorSintactico:
         return self.tokens[self.pos]
 
     def _token_siguiente(self):
-        self.pos += 1
+        if self.pos < len(self.tokens) - 1:
+            self.pos += 1
         return self._token_actual()
 
     def crear_arbol(self, tokens: list[Token]):
-        root: Node = None
-        nodes: list[Node] = []
-        for token in tokens:
-            if not root:
-                root = Node(token.valor)
-                continue
-            # nodes.append(Node(i.valor, parent=root))
-            if token.tipo == "IF":
-                self.analizar_if()
-        #@TODO: export to image
-        # DotExporter(root).to_picture("arbol.png")
+        self.tokens = tokens
+        expresion = self.definir_if()
+        return expresion
+        # root: Node = None
+        # nodes: list[Node] = []
+        # for token in tokens:
+        #     if not root:
+        #         root = Node(token.valor)
+        #         continue
+        #     # nodes.append(Node(i.valor, parent=root))
+        #     if token.tipo == "IF":
+        #         self.analizar_if()
 
-        #@TODO: print tree
-        # for pre, fill, node in RenderTree(root):
-        #     print(f"{pre}{node.name}")
+    def crear_factor(self) -> Numero:
+        token_actual = self._token_actual()
+        if token_actual.tipo in ["SUM", "SUB", "NOT"]:
+            self._token_siguiente()
+            factor = self.crear_factor()
+            return ExpresionPrefijo(token_actual, factor)
 
-    def analizar_if(self):
-        argumento = self.analizar_argumento_condicional()
-        cuerpo = self.analizar_cuerpo()
-        else_ = self.analizar_else()  # mismo que el cuerpo
+        elif token_actual.tipo in ["INT", "FLOAT", "VAR"]:
+            self._token_siguiente()
+            return Numero(token_actual)
 
-    # def analizar_infijo(self) -> ExpresionInfijo:
-    #    pass
+        elif token_actual.tipo == "OPENSEP1":
+            self._token_siguiente()
+            expresion = self.crear_comparacion_booleana()
+            if self._token_actual().tipo == "CLOSESEP1":
+                self._token_siguiente()
+                return expresion
+        return None
 
-    def analizar_argumento_condicional(self) -> ExpresionInfijo:
-        if self._token_actual().tipo not in ["INT", "FLOAT", "STRING", "VAR"]:
-            return None
+    def crear_termino(self):
+        return self.definir_infijo(self.crear_factor, ["MULT", "DIV"])
 
-        if self._token_siguiente().tipo not in ["MENOR", "MAYOR", "MENIG", "MAYIG", "IGUAL", "NIGUAL"]:
-            return None
+    def crear_expresion(self):
+        return self.definir_infijo(self.crear_termino, ["SUM", "SUB"])
 
-        if self._token_siguiente().tipo not in ["INT", "FLOAT", "STRING", "VAR"]:
-            return None
+    def crear_comparacion(self):
+        return self.definir_infijo(
+            self.crear_expresion, ["MENOR", "MAYOR", "MENIG", "MAYIG"]
+        )
 
+    def crear_comparacion_igualdad(self):
+        return self.definir_infijo(self.crear_comparacion, ["IGUAL", "NIGUAL"])
 
-"""num operador Num
-bool operador bool
-variable operador 
-string operador string 
+    def crear_comparacion_booleana(self):
+        return self.definir_infijo(
+            self.crear_comparacion_igualdad, ["AND", "OR", "NOT"]
+        )
 
-if statement = if <exeprsion> then <expresion> else <expresion> |
-               if <expresion> then <expresion>
+    def definir_infijo(self, expresion: function, tipos: list[str]):
+        left = expresion()
 
-            if x < 5:
-                x = 0
-            else:
-                x = 1
-            
-            if
-    x < 5       x = 0 .    x = 1
+        while self._token_actual().tipo in tipos:
+            operador = self._token_actual()
+            self._token_siguiente()
+            right = expresion()
+            left = ExpresionInfijo(left, operador, right)
 
-            if
-        >
-    +      10
- x    5
+        return left
 
-"""
+    def definir_if(self):
+        if_ = ExpresionIF(None, None, None)
+        self._token_siguiente()
+        if_.condicion = self.crear_comparacion_booleana()
+        if_.cuerpo = None
+        if_.else_ = None
+        return if_
+
+    # def analizar_expresion(self) -> Expresion:
+    #     left: Numero = self.crear_factor()
+
+    # def analizar_argumento_condicional(self) -> ExpresionInfijo:
+    #     if self._token_actual().tipo not in ["INT", "FLOAT", "STRING", "VAR"]:
+    #         return None
+
+    #     if self._token_siguiente().tipo not in ["MENOR", "MAYOR", "MENIG", "MAYIG", "IGUAL", "NIGUAL"]:
+    #         return None
+
+    #     if self._token_siguiente().tipo not in ["INT", "FLOAT", "STRING", "VAR"]:
+    #         return None

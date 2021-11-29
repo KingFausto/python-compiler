@@ -55,7 +55,8 @@ class Compilador:
             for i in f.readlines():
                 codigo: list = self._preprocesar_codigo(i)
                 tokens: list = self.analizador_lexico.crear_tokens(codigo)
-                arbol: Node = self.analizador_sintactico.crear_arbol(tokens)
                 token_list += tokens
+        arbol = self.analizador_sintactico.crear_arbol(token_list)
+        # print(token_list)
 
-        return token_list
+        return arbol
