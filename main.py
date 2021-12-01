@@ -1,6 +1,11 @@
 from compilador import Compilador
 
-if __name__ == "__main__":
+
+def main():
     compilador = Compilador()
-    codigo = compilador.compilar_codigo("test.txt")
+    codigo = compilador.compilar_codigo("test-2.txt")
     print(codigo)
+
+
+if __name__ == "__main__":
+    main()
