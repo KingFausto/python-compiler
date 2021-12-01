@@ -1,9 +1,6 @@
 from __future__ import annotations
-from ast import Num
 from expresion import *
 from token_ import Token
-from anytree import Node, RenderTree
-from anytree.exporter import DotExporter
 
 
 class AnalizadorSintactico:
@@ -120,7 +117,7 @@ class AnalizadorSintactico:
         self._token_siguiente()
         if self._token_actual().tipo != "ASIGN":
             return None
-        self._token_siguiente() 
+        self._token_siguiente()
         asignacion.expresion = self.crear_comparacion_booleana()
         if asignacion.expresion is None:
             return None
@@ -157,7 +154,6 @@ class AnalizadorSintactico:
         self._token_siguiente()
         switch.match = declaracion
         while self._token_actual().tipo != "CLOSESEP3":
-            print(self._token_actual())
             case = self.definir_condicion()
             if case is None:
                 return None

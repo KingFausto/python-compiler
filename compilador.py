@@ -4,7 +4,6 @@ from token_ import Token
 from analizador_lexico import AnalizadorLexico
 from analizador_sintactico import AnalizadorSintactico
 from analizador_semantico import AnalizadorSemantico
-from anytree import Node
 
 
 class Compilador:
@@ -59,6 +58,5 @@ class Compilador:
 
         token_list.append(Token("EOF", "EOF"))
         arbol = self.analizador_sintactico.crear_arbol(token_list)
-        # print(token_list)
 
         return arbol
