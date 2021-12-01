@@ -20,18 +20,16 @@ class AnalizadorSintactico:
         return self._token_actual()
 
     def crear_arbol(self, tokens: list[Token]):
+        arbol = []
         self.tokens = tokens
-        expresion = self.definir_if()
-        return expresion
-        # root: Node = None
-        # nodes: list[Node] = []
-        # for token in tokens:
-        #     if not root:
-        #         root = Node(token.valor)
-        #         continue
-        #     # nodes.append(Node(i.valor, parent=root))
-        #     if token.tipo == "IF":
-        #         self.analizar_if()
+        while self._token_actual().tipo != "EOF":
+            declaracion = self.definir_declaracion()
+            if declaracion is None:
+                return None
+            arbol.append(declaracion)
+            if self._token_actual().tipo == "SEP4":
+                self._token_siguiente()
+        return arbol
 
     def crear_factor(self) -> Numero:
         token_actual = self._token_actual()
@@ -40,9 +38,21 @@ class AnalizadorSintactico:
             factor = self.crear_factor()
             return ExpresionPrefijo(token_actual, factor)
 
-        elif token_actual.tipo in ["INT", "FLOAT", "VAR"]:
+        elif token_actual.tipo in ["INT", "FLOAT"]:
             self._token_siguiente()
             return Numero(token_actual)
+
+        elif token_actual.tipo == "STRING":
+            self._token_siguiente()
+            return Cadena(token_actual)
+
+        elif token_actual.tipo == "BOOL":
+            self._token_siguiente()
+            return Booleano(token_actual)
+
+        elif token_actual.tipo == "VAR":
+            self._token_siguiente()
+            return Variable(token_actual)
 
         elif token_actual.tipo == "OPENSEP1":
             self._token_siguiente()
@@ -82,23 +92,86 @@ class AnalizadorSintactico:
 
         return left
 
-    def definir_if(self):
-        if_ = ExpresionIF(None, None, None)
+    def definir_condicion(self) -> ExpresionCondicion:
+        if_ = ExpresionCondicion(self._token_actual(), None, None, None)
         self._token_siguiente()
         if_.condicion = self.crear_comparacion_booleana()
-        if_.cuerpo = None
-        if_.else_ = None
+        if self._token_actual().tipo != "OPENSEP3":
+            return None
+        self._token_siguiente()
+        if_.cuerpo = self.definir_bloque()
+        if if_.cuerpo is None:
+            return None
+        self._token_siguiente()
+        if self._token_actual().tipo == "ELSE":
+            self._token_siguiente()
+            if self._token_actual().tipo != "OPENSEP3":
+                return None
+            self._token_siguiente()
+            if_.else_ = self.definir_bloque()
+            self._token_siguiente()
         return if_
 
-    # def analizar_expresion(self) -> Expresion:
-    #     left: Numero = self.crear_factor()
+    def definir_asignacion(self) -> ExpresionAsignacion:
+        asignacion = ExpresionAsignacion(None, None)
+        if self._token_actual().tipo != "VAR":
+            return None
+        asignacion.identificador = self._token_actual()
+        self._token_siguiente()
+        if self._token_actual().tipo != "ASIGN":
+            return None
+        self._token_siguiente() 
+        asignacion.expresion = self.crear_comparacion_booleana()
+        if asignacion.expresion is None:
+            return None
+        return asignacion
 
-    # def analizar_argumento_condicional(self) -> ExpresionInfijo:
-    #     if self._token_actual().tipo not in ["INT", "FLOAT", "STRING", "VAR"]:
-    #         return None
+    def definir_auxiliares(self) -> ExpresionAuxiliar:
+        declaracion = ExpresionAuxiliar(None, None)
+        if self._token_actual().tipo not in ["PRINT", "RETURN", "BREAK"]:
+            return None
+        declaracion.funcion = self._token_actual()
+        self._token_siguiente()
+        declaracion.expresion = self.crear_comparacion_booleana()
+        return declaracion
 
-    #     if self._token_siguiente().tipo not in ["MENOR", "MAYOR", "MENIG", "MAYIG", "IGUAL", "NIGUAL"]:
-    #         return None
+    def definir_declaracion(self) -> Expresion:
+        if self._token_actual().tipo == "VAR":
+            return self.definir_asignacion()
+        elif self._token_actual().tipo in ["IF", "WHILE"]:
+            return self.definir_condicion()
+        elif self._token_actual().tipo == "SWITCH":
+            return self.definir_switch()
+        else:
+            return self.definir_auxiliares()
 
-    #     if self._token_siguiente().tipo not in ["INT", "FLOAT", "STRING", "VAR"]:
-    #         return None
+    def definir_switch(self) -> ExpresionSwitch:
+        switch = ExpresionSwitch(None, None)
+        self._token_siguiente()
+        condiciones = []
+        declaracion = self.crear_comparacion_booleana()
+        if declaracion is None:
+            return None
+        if self._token_actual().tipo != "OPENSEP3":
+            return None
+        self._token_siguiente()
+        switch.match = declaracion
+        while self._token_actual().tipo != "CLOSESEP3":
+            print(self._token_actual())
+            case = self.definir_condicion()
+            if case is None:
+                return None
+            condiciones.append(case)
+        self._token_siguiente()
+        switch.cases = condiciones
+        return switch
+
+    def definir_bloque(self) -> list[Expresion]:
+        bloque = Bloque(None)
+        expresiones = []
+        while self._token_actual().tipo not in ["EOF", "CLOSESEP3"]:
+            expresiones.append(self.definir_declaracion())
+            if self._token_actual().tipo == "SEP4":
+                self._token_siguiente()
+        bloque.expresiones = expresiones
+        return bloque

@@ -56,6 +56,8 @@ class Compilador:
                 codigo: list = self._preprocesar_codigo(i)
                 tokens: list = self.analizador_lexico.crear_tokens(codigo)
                 token_list += tokens
+
+        token_list.append(Token("EOF", "EOF"))
         arbol = self.analizador_sintactico.crear_arbol(token_list)
         # print(token_list)
 

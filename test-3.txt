@@ -1,3 +1,17 @@
-o_O? T_T (3 + 5 =_= 2) &_& (2 * (3 + 3) :V 3) {
-    x = 0;
+o_O? x :V 2 {
+    x = 123412324;
+    >:O x;
+    y = x;
+    $_$ y * x;
+} O_o? {
+    o_O? x =_= 2 {
+        :O esto es z
+        z = 2;
+        >:O z;
+    }
 }
+>:O True;
+@_@ x :V 5 {
+    >:O "HELLO OSCAR HOW R U";
+    :S;
+} 

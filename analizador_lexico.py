@@ -33,23 +33,23 @@ class AnalizadorLexico:
             "T_T": "NOT",
             # operadores condicionales
             "@_@": "WHILE",
-            "#_#": "FOR",
+            "#_#": "SWITCH",
+            ">.>": "CASE",
             "o_O?": "IF",
-            "O_O?": "ELIF",
             "O_o?": "ELSE",
             # auxiliares
             "$_$": "RETURN",
             ">:O": "PRINT",
             ":O": "COMMENT",
-            ">.>": "IN",
-            ":S": "BREAK",
-            "♥_♥": "FUN",
+            ":S": "BREAK"
         }
 
     def crear_tokens(self, codigo):
         tokens = []
         for i in codigo:
-            if i in self.keywords:
+            if i == ":O":
+                break
+            elif i in self.keywords:
                 tokens.append(Token(self.keywords[i], i))
             elif re.search(r"^\d+$", i):
                 tokens.append(Token("INT", i))
@@ -57,6 +57,8 @@ class AnalizadorLexico:
                 tokens.append(Token("FLOAT", i))
             elif i[0] == '"':
                 tokens.append(Token("STRING", i))
+            elif i in ["True", "False"]:
+                tokens.append(Token("BOOL", i))
             else:
                 tokens.append(Token("VAR", i))
         return tokens

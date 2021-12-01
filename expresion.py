@@ -1,3 +1,4 @@
+from __future__ import annotations
 from re import X
 from token_ import Token
 from abc import ABC, abstractmethod
@@ -13,17 +14,27 @@ class ExpresionAsignacion(Expresion):
         self.expresion = expresion
 
     def __repr__(self):
-        return f"{self.identificador} = {self.expresion}"
+        return f"ASIGN({self.identificador.valor},{self.expresion})"
 
 
-class ExpresionIF(Expresion):
-    def __init__(self, condicion: Expresion, cuerpo: Expresion, else_: Expresion):
+class ExpresionCondicion(Expresion):
+    def __init__(self, tipo: Token, condicion: Expresion, cuerpo: Bloque, else_: Bloque):
+        self.tipo = tipo
         self.condicion = condicion
         self.cuerpo = cuerpo
         self.else_ = else_
 
     def __repr__(self):
-        return f"if({self.condicion},{self.cuerpo},{self.else_})"
+        return f"{self.tipo.tipo}({self.condicion},{self.cuerpo},{self.else_})"
+
+
+class ExpresionSwitch(Expresion):
+    def __init__(self, match: Expresion, cases: list[Expresion]):
+        self.match = match
+        self.cases = cases
+
+    def __repr__(self):
+        return f"SWITCH({self.match},CASES{self.cases})"
 
 
 class ExpresionInfijo(Expresion):
@@ -39,7 +50,7 @@ class ExpresionInfijo(Expresion):
 
     def __repr__(self):
         return (
-            f"{self.operador.valor}({self.primera_expresion},{self.segunda_expresion})"
+            f"{self.operador.tipo}({self.primera_expresion},{self.segunda_expresion})"
         )
 
 
@@ -49,7 +60,24 @@ class ExpresionPrefijo(Expresion):
         self.expresion = expresion
 
     def __repr__(self):
-        return f"{self.operador.valor}({self.expresion})"
+        return f"{self.operador.tipo}({self.expresion})"
+
+
+class ExpresionAuxiliar(Expresion):
+    def __init__(self, funcion: Token, expresion: Expresion):
+        self.funcion = funcion
+        self.expresion = expresion
+
+    def __repr__(self):
+        return f"{self.funcion.tipo}({self.expresion})"
+
+
+class Bloque(Expresion):
+    def __init__(self, expresiones: list[Expresion]):
+        self.expresiones = expresiones
+
+    def __repr__(self):
+        return f"BLOQUE{self.expresiones}"
 
 
 class Numero(Expresion):
@@ -65,7 +93,7 @@ class Cadena(Expresion):
         self.cadena = cadena
 
     def __repr__(self):
-        return self.cadena
+        return self.cadena.valor
 
 
 class Booleano(Expresion):
@@ -73,22 +101,12 @@ class Booleano(Expresion):
         self.booleano = booleano
 
     def __repr__(self):
-        return str(self.booleano)
+        return str(self.booleano.valor)
 
 
-"""expr -> IF | WHILE | FOR | RETURN 
-IF -> if expr: expr | if expr: expr else expr | if expr: expr elif expr 
-WHILE -> while expr: expr
+class Variable(Expresion):
+    def __init__(self, variable: Token):
+        self.variable = variable
 
-if_ = Node("IF")
-if x < 5:
-    print("HELLO WORLD")
-
-EXPRESIONCONDICIONAL 
-| - CONDICION
-|    | - (IDENTIFIACDOR, 3)
-|    | - (MENIGUAL, +)
-|    | - (NUMERO, 5)
-| - CUERPO
-|   | - 
-"""
+    def __repr__(self):
+        return str(self.variable.valor)
